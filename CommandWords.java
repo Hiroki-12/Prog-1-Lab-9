@@ -13,7 +13,7 @@ public class CommandWords
 {
     // a constant array that holds all valid command words
     private static final String[] validCommands = {
-        "go", "quit", "help"
+        "go", "quit", "help", "eat", "look", "back", "take", "drop"
     };
 
     /**
@@ -23,7 +23,17 @@ public class CommandWords
     {
         // nothing to do at the moment...
     }
-
+    
+    public String showAll()
+    {
+        String allCommands = " ";
+        for (String command : validCommands)
+        {
+            allCommands += (" " + command);
+        }
+        return allCommands;
+    }
+    
     /**
      * Check whether a given String is a valid command word. 
      * @return true if a given string is a valid command,

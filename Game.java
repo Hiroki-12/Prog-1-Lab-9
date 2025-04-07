@@ -1,3 +1,4 @@
+import java.util.Stack;
 /**
  *  This class is the main class of the "World of Zuul" application. 
  *  "World of Zuul" is a very simple, text based adventure game.  Users 
@@ -19,6 +20,8 @@ public class Game
 {
     private Parser parser;
     private Room currentRoom;
+    private Stack<Room> previousRooms;
+    private Player player;
         
     /**
      * Create the game and initialise its internal map.
@@ -44,12 +47,19 @@ public class Game
         office = new Room("in the computing admin office");
         
         // initialise room exits
-        outside.setExits(null, theater, lab, pub);
-        theater.setExits(null, null, null, outside);
-        pub.setExits(null, outside, null, null);
-        lab.setExits(outside, office, null, null);
-        office.setExits(null, null, null, lab);
-
+        outside.setExit("east", theater);
+        outside.setExit("south", lab);
+        outside.setExit("west", pub);
+        
+        theater.setExit("west", outside);
+        
+        pub.setExit("east", outside);
+        
+        lab.setExit("north", outside);
+        lab.setExit("east", office);
+        
+        office.setExit("west", lab);
+        
         currentRoom = outside;  // start game outside
     }
 
@@ -85,7 +95,7 @@ public class Game
     }
 
     private void printLocationInfo(){        
-        System.out.println(currentRoom.getExitString());
+        System.out.println(currentRoom.getLongDescription());
     }
     
     /**
@@ -112,7 +122,18 @@ public class Game
         else if (commandWord.equals("quit")) {
             wantToQuit = quit(command);
         }
-
+        else if (commandWord.equals("look"))
+        {
+            System.out.println("Looking around...");
+        }
+        else if (commandWord.equals("eat"))
+        {
+            System.out.println("You have eaten now and you are not hungry anymore.");
+        }
+        else if (commandWord.equals("back"))
+        {
+            back();
+        }
         return wantToQuit;
     }
 
@@ -129,7 +150,7 @@ public class Game
         System.out.println("around at the university.");
         System.out.println();
         System.out.println("Your command words are:");
-        System.out.println("   go quit help");
+        System.out.println(parser.showAllCommands());
     }
 
     /** 
@@ -155,9 +176,23 @@ public class Game
         else {
             currentRoom = nextRoom;
             printLocationInfo();
+            previousRooms.push(currentRoom);
         }
     }
-
+    
+    private void back()
+    {
+        if (previousRooms.isEmpty())
+        {
+            System.out.println("You can't go back further!");
+        }
+        else
+        {
+            currentRoom = previousRooms.pop();
+            printLocationInfo();
+        }
+    }
+    
     /** 
      * "Quit" was entered. Check the rest of the command to see
      * whether we really quit the game.
@@ -171,6 +206,32 @@ public class Game
         }
         else {
             return true;  // signal that we want to quit
+        }
+    }
+    
+    public void takeItem(Command command)
+    {
+        if(!command.hasSecondWord())
+        {
+            System.out.println("Take what?");
+            return;
+        }
+        
+        String itemName = command.getSecondWord();
+        Item item = player.getCurrentRoom().getItem(itemName);
+        
+        if(item == null)
+        {
+            System.out.println("There is no such item.");
+        }
+        else if(player.takeItem(item))
+        {
+            player.getCurrentRoom().removeItem(item);
+            System.out.println("You took the " + itemName);
+        }
+        else
+        {
+            System.out.println("You can't carry that, it's too heavy!");
         }
     }
 }

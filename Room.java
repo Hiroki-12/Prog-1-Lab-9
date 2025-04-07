@@ -1,3 +1,5 @@
+import java.util.HashMap;
+import java.util.ArrayList;
 /**
  * Class Room - a room in an adventure game.
  *
@@ -12,13 +14,12 @@
  * @author  Michael Kölling and David J. Barnes
  * @version 2016.02.29
  */
+
 public class Room 
 {
     private String description;
-    private Room northExit;
-    private Room southExit;
-    private Room eastExit;
-    private Room westExit;
+    private HashMap<String, Room> exits;
+    private ArrayList<Item> items;
 
     /**
      * Create a room described "description". Initially, it has
@@ -29,23 +30,17 @@ public class Room
     public Room(String description) 
     {
         this.description = description;
+        this.exits = new HashMap<>();
+        items = new ArrayList<>();
     }
-
+    
+    public void addItem(Item item)
+    {
+        items.add(item);
+    }
+    
     public Room getExit(String direction){
-        Room nextRoom = null;
-        if(direction.equals("north")) {
-            nextRoom = northExit;
-        }
-        if(direction.equals("east")) {
-            nextRoom = eastExit;
-        }
-        if(direction.equals("south")) {
-            nextRoom = southExit;
-        }
-        if(direction.equals("west")) {
-            nextRoom = westExit;
-        }
-        return nextRoom;
+        return exits.get(direction);
     }
     
     /** * Return a description of the room’s exits,
@@ -53,47 +48,26 @@ public class Room
     * @return A description of the available exits.
     */
     public String getExitString() {
-        String exitString = "You are " + description;
-        exitString = exitString + "\nExits: ";
-        if(!northExit.equals(null)) {
-            exitString += "north ";
-        }    
-        if(!eastExit.equals(null)) {
-            exitString += "east ";
+        String exitString = "Exits: ";
+        
+        for (String direction : exits.keySet())
+        {
+            exitString += (direction + " ");
         }
-        if(!southExit.equals(null)) {
-            exitString += "south ";
-        }
-        if(!westExit.equals(null)) {
-            exitString += "west ";
-        }
+        
         return exitString;  
     }
     
     /**
-     * Define the exits of this room.  Every direction either leads
-     * to another room or is null (no exit there).
-     * @param north The north exit.
-     * @param east The east east.
-     * @param south The south exit.
-     * @param west The west exit.
+     * Set the exit to a particular direction to a neighbor room
+     * @param direction to move
+     * @param neighbor represent the next room
      */
-    public void setExits(Room north, Room east, Room south, Room west) 
+    public void setExit(String direction, Room neighbor)
     {
-        if(north != null) {
-            northExit = north;
-        }
-        if(east != null) {
-            eastExit = east;
-        }
-        if(south != null) {
-            southExit = south;
-        }
-        if(west != null) {
-            westExit = west;
-        }
+        exits.put(direction,neighbor);
     }
-
+    
     /**
      * @return The description of the room.
      */
@@ -101,5 +75,45 @@ public class Room
     {
         return description;
     }
-
+    
+    public String getLongDescription()
+    {
+        return "You are " + description + ".\n" + getExitString();
+    }
+    
+    public String getItemDescription()
+    {
+        String returnItem = "You are " + description;
+        returnItem += "\n" + getExitString();
+        if (!items.isEmpty())
+        {
+            returnItem += "\nItems in room:";
+            for (Item item : items)
+            {
+                returnItem += "\n-" + item.getDescription();
+            }
+        }
+        
+        return returnItem;
+    }
+    
+    public Item getItem(String itemName)
+    {
+        for (Item item : items)
+        {
+            if (item.getDescription().toLowerCase().contains(itemName.toLowerCase())){
+                return item;
+            }
+        }
+        return null;
+    }
+    
+    public boolean removeItem(Item itemToRemove)
+    {
+        if (items.remove(itemToRemove))
+        {
+            return true;
+        }
+        return false;
+    }
 }
